@@ -28,7 +28,7 @@ function updateLanguage() {
         }
     });
     
-    // Update map pin tooltips
+    // Update map pins
     updateMapPins();
 }
 
@@ -39,7 +39,7 @@ function updateMapPins() {
         const nameEn = pin.getAttribute('data-name-en');
         const people = pin.getAttribute('data-people');
         const name = currentLanguage === 'pt' ? namePt : nameEn;
-        const label = currentLanguage === 'pt' ? 'pessoas ajudadas' : 'people helped';
+        const label = currentLanguage === 'pt' ? 'pessoas impactadas' : 'people impacted';
         
         // Update the CSS content via inline style
         pin.style.setProperty('--tooltip-content', `"${name}\\A+${parseInt(people).toLocaleString()} ${label}"`);
@@ -165,7 +165,7 @@ function handleIdeaFormSubmit(e) {
     const city = document.getElementById('city').value;
     const idea = document.getElementById('idea').value;
     
-    const message = `Olá MPBIA! Tive uma ideia para o próximo projeto.\n\nNome: ${name}\nCidade: ${city}\nIdeia: ${idea}`;
+    const message = `Olá IMPBIA! Quero entrar em contato.\n\nNome: ${name}\nCidade: ${city}\nMensagem: ${idea}`;
     const whatsappUrl = `https://api.whatsapp.com/send/?phone=5521988793046&text=${encodeURIComponent(message)}`;
     
     window.open(whatsappUrl, '_blank');
@@ -188,18 +188,67 @@ function initMapPins() {
     updateMapPins();
 }
 
+// Books Carousel
+let currentCarouselIndex = 0;
+
+function moveCarousel(direction) {
+    const carousel = document.querySelector('.books-carousel');
+    const cards = document.querySelectorAll('.book-card');
+    const totalCards = cards.length;
+    
+    // Calculate visible cards based on screen width
+    let visibleCards = 3;
+    if (window.innerWidth <= 768) {
+        visibleCards = 1;
+    } else if (window.innerWidth <= 1024) {
+        visibleCards = 2;
+    }
+    
+    const maxIndex = Math.max(0, totalCards - visibleCards);
+    
+    currentCarouselIndex += direction;
+    
+    // Loop the carousel
+    if (currentCarouselIndex < 0) {
+        currentCarouselIndex = maxIndex;
+    } else if (currentCarouselIndex > maxIndex) {
+        currentCarouselIndex = 0;
+    }
+    
+    const cardWidth = cards[0].offsetWidth + 48; // Include gap
+    carousel.style.transform = `translateX(-${currentCarouselIndex * cardWidth}px)`;
+}
+
+// Open Book Store
+function openBookStore() {
+    window.open('https://www.amazon.com.br/s?k=mpbia', '_blank');
+}
+
+// Auto-play carousel
+function autoPlayCarousel() {
+    setInterval(() => {
+        moveCarousel(1);
+    }, 5000);
+}
+
 // Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
     // Language toggle
-    document.getElementById('language-toggle').addEventListener('click', toggleLanguage);
+    const langToggle = document.getElementById('language-toggle');
+    if (langToggle) {
+        langToggle.addEventListener('click', toggleLanguage);
+    }
     
     // Navbar scroll
     window.addEventListener('scroll', handleNavbarScroll);
     
     // Logo click
-    document.querySelector('.logo-container').addEventListener('click', () => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
+    const logoContainer = document.querySelector('.logo-container');
+    if (logoContainer) {
+        logoContainer.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    }
     
     // Setup animations
     setupScrollAnimations();
@@ -213,6 +262,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Initialize map pins
     initMapPins();
+    
+    // Initialize carousel auto-play
+    autoPlayCarousel();
     
     // Smooth scroll for all internal links
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -231,5 +283,11 @@ window.addEventListener('resize', () => {
     resizeTimer = setTimeout(() => {
         // Recalculate animations if needed
         setupScrollAnimations();
+        // Reset carousel position on resize
+        currentCarouselIndex = 0;
+        const carousel = document.querySelector('.books-carousel');
+        if (carousel) {
+            carousel.style.transform = 'translateX(0)';
+        }
     }, 250);
 });
